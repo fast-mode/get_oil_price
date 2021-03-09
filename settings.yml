@@ -1,0 +1,9 @@
+get_oil_price:
+  name: get_oil_price
+  version: 1
+  has_mdl: False
+  has_sitemap: False
+  route:
+    route_prefix: oil/price
+    tags: 
+    - 获取燃油价格
