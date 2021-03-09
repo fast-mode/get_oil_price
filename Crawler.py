@@ -14,6 +14,10 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pymysql
+from urllib import request
+
+is_use_engine = False
+
 """
 map规范:
 - 空格用于防止key重名
@@ -26,15 +30,24 @@ class Crawler:
     def search(self,sitelist,catch_map,sleepTime=1,fun=None):
         for i in sitelist:
             if self.url[0:4] == 'http':
-                # 启动浏览器
-                browserEngine = webdriver.Chrome(ChromeDriverManager().install())
-                browserEngine.get(self.url.format(i))
-                # 等待
-                browserEngine.implicitly_wait(60)
-                time.sleep(sleepTime)
-                page_source = browserEngine.page_source
-                # 关闭浏览器
-                browserEngine.quit()
+                if is_use_engine:
+                    # 启动浏览器
+                    browserEngine = webdriver.Chrome(ChromeDriverManager().install())
+                    browserEngine.get(self.url.format(i))
+                    # 等待
+                    browserEngine.implicitly_wait(60)
+                    time.sleep(sleepTime)
+                    page_source = browserEngine.page_source
+                    # 关闭浏览器
+                    browserEngine.quit()
+                else:
+                    headers = {'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Mobile Safari/537.36'}
+                    # 创建请求
+                    req = request.Request(url=self.url, headers=headers)
+                    with request.urlopen(req) as response:
+                        # 读取response里的内容，并转码
+                        page_source = response.read().decode('utf-8') # 默认即为 utf-8
+
             else:
                 page_source = open(self.url).read()
             # 进行搜索
