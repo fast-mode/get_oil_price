@@ -7,3 +7,7 @@ bp = APIRouter()
 def get_oil_price():
     return crud.get_oil_price()
     # return {'92#': '6.57', '95#': '6.98', '98#': '7.65', '0#': '6.20'}
+
+@bp.get("/all/citys")
+def get_all_city():
+    return crud.get_all_city()

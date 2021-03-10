@@ -3,18 +3,24 @@
 #!pip install webdriver_manager
 
 import os
-
-os.system("pip3 install beautifulsoup4")
-os.system("pip3 install selenium")
-os.system("pip3 install webdriver-manager")
-os.system("pip3 install PyMySQL")
-
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 import time
-import pymysql
 from urllib import request
+
+# import
+try:
+    from bs4 import BeautifulSoup
+    from selenium import webdriver
+    from webdriver_manager.chrome import ChromeDriverManager
+    import pymysql
+except:
+    os.system("pip3 install beautifulsoup4")
+    os.system("pip3 install selenium")
+    os.system("pip3 install webdriver-manager")
+    os.system("pip3 install PyMySQL")
+    from bs4 import BeautifulSoup
+    from selenium import webdriver
+    from webdriver_manager.chrome import ChromeDriverManager
+    import pymysql
 
 is_use_engine = False
 
@@ -27,6 +33,8 @@ class Crawler:
     def __init__(self,url):
         self.url = url
         self.insertMap = {}
+        
+
     def search(self,sitelist,catch_map,sleepTime=1,fun=None):
         for i in sitelist:
             if self.url[0:4] == 'http':
@@ -43,7 +51,8 @@ class Crawler:
                 else:
                     headers = {'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Mobile Safari/537.36'}
                     # 创建请求
-                    req = request.Request(url=self.url, headers=headers)
+                    req = request.Request(url=self.url.format(i), headers=headers)
+                    time.sleep(0.5)
                     with request.urlopen(req) as response:
                         # 读取response里的内容，并转码
                         page_source = response.read().decode('utf-8') # 默认即为 utf-8
@@ -60,7 +69,7 @@ class Crawler:
                 except Exception:
                     pass
                 self.insertMap = {}
-            return (i, self.insertMap)
+        return self.insertMap
     def __find(self,cmap,browserList:list):
         if isinstance(cmap,dict):
             index = 0
@@ -137,7 +146,11 @@ class Crawler:
     def __getSearchStr(self,browser):
         if browser.string == None:
             a = str(browser).replace('<br/>','')
-            rt = BeautifulSoup(a, 'html.parser').string.strip()
+            context = BeautifulSoup(a, 'html.parser').string
+            if context != None:
+                rt = context.strip()
+            else:
+                rt = a
             return rt
         else:
             rt = browser.string.strip()
@@ -175,47 +188,47 @@ class DataChanger:
             rtList.append(rtMap)
         return rtList
 
-class DataInputer:
-    def __init__(self,user='dehm',password='normidar',db='dehm',host='127.0.0.1',port=3306):
-        self.db = pymysql.connect(host=host,port=port,user=user,password=password,db=db)
-        self.conn = self.db.cursor()
-    def insert(self,table,datas):
-        sql = self.__getInsertSql(table,datas[0])
-        self.conn.executemany(sql,datas)
-        self.db.commit()
-        self.db.close()
-    # update和上面的datas都是数组
-    def update(self,table,where,updates):
-        sql = self.__getUpdateSql(table,where,updates[0])
-        self.conn.executemany(sql,updates)
-        self.db.commit()
-        self.db.close()
-    def __getUpdateSql(self,table,where,data):
-        cols = ", ".join('{0}=%({0})s'.format(k) for k in data.keys())
-        # print(cols)  # '`name`, `age`'
-        for i in where.keys():
-            sql = "UPDATE "+ table +" SET %s WHERE "+i+ "="+ where[i]
-            break
-        res_sql = sql % (cols)
-        print(res_sql) # 'insert into users(`name`, `age`) values(%(name)s, %(age)s)'
-        return res_sql
-    def __getInsertSql(self,table,data):
-        cols = ", ".join('`{}`'.format(k) for k in data.keys())
-        # print(cols)  # '`name`, `age`'
-        val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
-        # print(val_cols)  # '%(name)s, %(age)s'
-        sql = "insert into "+ table +"(%s) values(%s)"
-        res_sql = sql % (cols, val_cols)
-        # print(res_sql) # 'insert into users(`name`, `age`) values(%(name)s, %(age)s)'
-        return res_sql
+# class DataInputer:
+#     def __init__(self,user='dehm',password='normidar',db='dehm',host='127.0.0.1',port=3306):
+#         self.db = pymysql.connect(host=host,port=port,user=user,password=password,db=db)
+#         self.conn = self.db.cursor()
+#     def insert(self,table,datas):
+#         sql = self.__getInsertSql(table,datas[0])
+#         self.conn.executemany(sql,datas)
+#         self.db.commit()
+#         self.db.close()
+#     # update和上面的datas都是数组
+#     def update(self,table,where,updates):
+#         sql = self.__getUpdateSql(table,where,updates[0])
+#         self.conn.executemany(sql,updates)
+#         self.db.commit()
+#         self.db.close()
+#     def __getUpdateSql(self,table,where,data):
+#         cols = ", ".join('{0}=%({0})s'.format(k) for k in data.keys())
+#         # print(cols)  # '`name`, `age`'
+#         for i in where.keys():
+#             sql = "UPDATE "+ table +" SET %s WHERE "+i+ "="+ where[i]
+#             break
+#         res_sql = sql % (cols)
+#         print(res_sql) # 'insert into users(`name`, `age`) values(%(name)s, %(age)s)'
+#         return res_sql
+#     def __getInsertSql(self,table,data):
+#         cols = ", ".join('`{}`'.format(k) for k in data.keys())
+#         # print(cols)  # '`name`, `age`'
+#         val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
+#         # print(val_cols)  # '%(name)s, %(age)s'
+#         sql = "insert into "+ table +"(%s) values(%s)"
+#         res_sql = sql % (cols, val_cols)
+#         # print(res_sql) # 'insert into users(`name`, `age`) values(%(name)s, %(age)s)'
+#         return res_sql
     
-    @staticmethod
-    def createTableSql(table,data):
-        rt = "CREATE TABLE `" + table + "` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
-        for k in data.keys():
-            rt += "`"+k+"` int(11) DEFAULT NULL,"
-        rt += "PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-        return rt
+#     @staticmethod
+#     def createTableSql(table,data):
+#         rt = "CREATE TABLE `" + table + "` (`id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
+#         for k in data.keys():
+#             rt += "`"+k+"` int(11) DEFAULT NULL,"
+#         rt += "PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+#         return rt
 # DataInputer().update('abc',{'fie':'val'},{'a':'b','c':'d'})
 # 末端过滤器的定义
 class Ii:
