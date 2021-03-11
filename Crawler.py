@@ -52,7 +52,7 @@ class Crawler:
                     headers = {'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Mobile Safari/537.36'}
                     # 创建请求
                     req = request.Request(url=self.url.format(i), headers=headers)
-                    time.sleep(0.5)
+                    # time.sleep(0.5)
                     with request.urlopen(req) as response:
                         # 读取response里的内容，并转码
                         page_source = response.read().decode('utf-8') # 默认即为 utf-8
