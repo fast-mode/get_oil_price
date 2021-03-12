@@ -53,6 +53,7 @@ def get_oil_price(city_name:str):
     url = 'http://www.qiyoujiage.com{}.shtml'
     c = Crawler(url)
     data = c.search([all_citys[city_name]],cMap,fun=None,sleepTime=0.5)
+    data["update_date"] = "2021/3/12"
     return data
 
 def get_all_city():
