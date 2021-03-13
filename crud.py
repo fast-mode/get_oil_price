@@ -36,7 +36,15 @@ all_citys = {
   "云南": "/yunnan"
 }
 
-cache = {}
+cache = {
+    "广东":{
+        "92#": "6.61",
+        "95#": "7.16",
+        "98#": "8.14",
+        "0#": "6.22",
+        "update_date": "2021/03/12"
+    }
+}
 
 def _catch_data(city_name:str):
     cMap={
@@ -53,6 +61,19 @@ def _catch_data(city_name:str):
     url = 'http://www.qiyoujiage.com{}.shtml'
     c = Crawler(url)
     data = c.search([all_citys[city_name]],cMap,fun=None,sleepTime=0.5)
+    # 检查数据是否变了
+    if city_name in cache:
+        d = cache[city_name]
+        if d['92#'] != data['92#']\
+            or d['95#'] != data['95#']\
+            or d['98#'] != data['98#']\
+            or d['0#'] != data['0#']:
+            data["update_date"] = time.strftime("%Y/%m/%d", time.localtime())
+            print("updated")
+            return data
+        else:
+            print("no_updated")
+            return cache[city_name]
     data["update_date"] = time.strftime("%Y/%m/%d", time.localtime())
     return data
 
