@@ -35,10 +35,10 @@ all_citys = {
   "新疆": "/xinjiang",
   "云南": "/yunnan"
 }
-time_stamp = time.time()
-oil_rt = None
 
-def get_oil_price(city_name:str):
+cache = {}
+
+def _catch_data(city_name:str):
     cMap={
         'div,youjiaCont':{
             'dd':{
@@ -53,24 +53,21 @@ def get_oil_price(city_name:str):
     url = 'http://www.qiyoujiage.com{}.shtml'
     c = Crawler(url)
     data = c.search([all_citys[city_name]],cMap,fun=None,sleepTime=0.5)
-    data["update_date"] = "2021/3/12"
+    data["update_date"] = time.strftime("%Y/%m/%d", time.localtime())
     return data
 
-def get_all_city():
-    if len(all_citys) == 0:
-        cMap={
-            'div,Area':'aa'
-        }
-        url = 'http://www.qiyoujiage.com/zhejiang.shtml'
-        c = Crawler(url)
-        request = c.search([0],cMap,fun=None,sleepTime=0.5)[1]
-        # 解拼音
-        rt = request["aa"]
-        rt = rt.split(".shtml")[:-3]
-        rt = [x[x.rfind('/'):] for x in rt]
-        # 解中文
-        cn = request["aa"].split("</a>")[:-3]
-        cn = [x[x.rfind('>')+1:] for x in cn]
-        for i in range(len(rt)):
-            all_citys[rt[i]] = cn[i]
-    return all_citys
+def get_oil_price(city_name:str):
+    if city_name not in cache:
+        data = _catch_data(city_name)
+        cache[city_name] = data
+        print("updated")
+        return data
+    else:
+        now = time.strftime("%Y/%m/%d", time.localtime())
+        if now != cache[city_name]["update_date"]:
+            data = _catch_data(city_name)
+            cache[city_name] = data
+            print("updated")
+            return data
+        else:
+            return cache[city_name]
